@@ -28,13 +28,34 @@ const UserList = () => {
       navigate('/login');
       return;
     }
-
+    /* const fetchUsers = async () => {
+       setLoading(true);
+       setError('');
+       try {
+         const data = await getUsers(page, pageSize);
+         setUsers(data.items);
+         setTotalCount(data.totalCount);
+       } catch (err) {
+         setError('Greška pri učitavanju korisnika.');
+       } finally {
+         setLoading(false);
+       }
+     };*/
     const fetchUsers = async () => {
       setLoading(true);
       setError('');
       try {
         const data = await getUsers(page, pageSize);
-        setUsers(data.items);
+
+        // za svakog korisnika povuci statistike
+        const usersWithStats = await Promise.all(
+          data.items.map(async (u) => {
+            const stats = await getProjectsByUser(u.id);
+            return { ...u, ...stats }; // spoji korisnika sa statistikama
+          })
+        );
+
+        setUsers(usersWithStats);
         setTotalCount(data.totalCount);
       } catch (err) {
         setError('Greška pri učitavanju korisnika.');
@@ -58,7 +79,7 @@ const UserList = () => {
     setProjects(null);
     try {
       const data = await getProjectsByUser(userId);
-      setProjects(data);
+      setProjects(data.listProjects);
     } catch (err) {
       setProjectsError('Došlo je do greške pri učitavanju projekata.');
     } finally {
@@ -90,7 +111,10 @@ const UserList = () => {
           {error && <p className="error-message">{error}</p>}
           {!loading && !error && users.map((u, index) => (
             <div key={index} className={`user-row ${selectedUserId === u.id ? 'active' : ''}`}>
-              <span>{u.name} {u.surname}</span>
+              <span>{u.fullName}</span>
+              <span>Kompletiranih: {u.completedProjects}</span>
+              <span>U realizaciji: {u.publishedProjects}</span>
+              <span>Poslednji završen: {u.latestCompletedProject ? new Date(u.latestCompletedProject).toLocaleDateString() : 'Nema'}</span>
               <button className="btn btn-sm" onClick={() => handleShowProjects(u.id)}>
                 Projekti
               </button>

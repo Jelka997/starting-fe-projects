@@ -16,6 +16,7 @@ const MyProjects = () => {
 
   const [editingProjectId, setEditingProjectId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCompleted, setCompleted] = useState(false);//za status completed
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -47,6 +48,7 @@ const MyProjects = () => {
     if (!project) return;
     setIsCreating(false);
     setEditingProjectId(projectId);
+    setCompleted(project.status === "Completed");//proveravamo da li je selektovani projekat u stanju completed ako jeste postavlja na true
     setFormError('');
     reset({
       name: project.name,
@@ -58,6 +60,7 @@ const MyProjects = () => {
   const handleNewProject = () => {
     setEditingProjectId(null);
     setIsCreating(true);
+    setCompleted(false);//vracamo na false kod dodavanja novog
     setFormError('');
     reset({ name: '', description: '', startedAt: '' });
   };
@@ -69,9 +72,10 @@ const MyProjects = () => {
       const dto = {
         name: data.name,
         description: data.description,
-        startedAt: data.startedAt ? new Date(data.startedAt).toISOString() : null
+        startedAt: data.startedAt ? new Date(data.startedAt).toISOString() : null,
+        completedAt: isCreating ? null : editingProject?.completedAt,
+        status: isCreating ? "Draft" : editingProject?.status
       };
-
       if (isCreating) {
         await createProject(dto);
       } else {
@@ -106,7 +110,7 @@ const MyProjects = () => {
   };
 
   const showForm = isCreating || editingProjectId;
-
+  const editingProject = projects.find(p => p.id === editingProjectId);
   return (
     <div className="my-projects-wrapper">
       <div className="my-projects-left">
@@ -121,7 +125,7 @@ const MyProjects = () => {
           <p style={{ padding: '20px' }}>Nemate projekata.</p>
         )}
         {!loading && !error && projects.length > 0 && (
-          <ProjectList projects={projects} onSelectProject={handleSelectProject} />
+          <ProjectList projects={projects} onSelectProject={handleSelectProject} onProjectUpdated={fetchProjects} />//dodali fetch project za dobavljanje projekata
         )}
       </div>
 
@@ -137,6 +141,7 @@ const MyProjects = () => {
               <input
                 type="text"
                 placeholder="Unesite naziv projekta"
+                disabled={isCompleted}//disabled input ako je u stanju completed
                 {...register('name', { required: 'Naziv je obavezan' })}
               />
               {errors.name && <span className="error-message">{errors.name.message}</span>}
@@ -146,6 +151,7 @@ const MyProjects = () => {
               <label>Opis:</label>
               <textarea
                 placeholder="Unesite opis projekta"
+                disabled={isCompleted}
                 rows={4}
                 {...register('description')}
               />
@@ -155,6 +161,7 @@ const MyProjects = () => {
               <label>Datum početka:</label>
               <input
                 type="datetime-local"
+                disabled={isCompleted}
                 {...register('startedAt')}
               />
             </div>

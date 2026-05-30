@@ -12,7 +12,11 @@
 
   .form-group {
     margin-bottom: 15px;
-    label { display: block; margin-bottom: 5px; }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
   }
 
   .form-actions {
@@ -33,8 +37,8 @@
 
 .profile-fields {
   margin-top: 20px;
-  
-  > div {
+
+  >div {
     display: flex;
     justify-content: space-between;
     padding: 15px;
@@ -63,7 +67,7 @@
 
 // User list (left panel - 30%)
 .user-list-container {
-  width: 30%;
+  width: 45%;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #ddd;
@@ -84,8 +88,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 15px;
-      border-bottom: 1px solid #eee;
+      gap: 15px;
+
 
       &.active {
         background-color: #e8f0fe;
